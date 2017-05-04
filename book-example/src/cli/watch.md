@@ -5,8 +5,7 @@ You could repeatedly issue `mdbook build` every time a file is changed. But usin
 
 #### Specify a directory
 
-Like `init` and `build`, `watch` can take a directory as argument to use instead of the
-current working directory.
+Like `init` and `build`, `watch` can take a directory as argument to use instead of the current working directory.
 
 ```bash
 mdbook watch path/to/book
@@ -14,8 +13,7 @@ mdbook watch path/to/book
 
 #### --open
 
-When you use the `--open` (`-o`) option, mdbook will open the rendered book in
-your default web browser.
+When you use the `--open` (`-o`) option, mdbook will open the rendered book in your default web browser.
 
 #### --dest-dir
 

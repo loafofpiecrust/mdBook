@@ -1,4 +1,5 @@
 # SUMMARY.md
+{css:color=indigo}
 
 The summary file is used by mdBook to know what chapters to include,
 in what order they should appear, what their hierarchy is and where the source files are.
@@ -22,9 +23,9 @@ allow for easy parsing. Let's see how you should format your `SUMMARY.md` file.
 
 3. ***Numbered Chapter*** Numbered chapters are the main content of the book, they will be numbered and can be nested,
    resulting in a nice hierarchy (chapters, sub-chapters, etc.)
-   ```markdown
-   - [Title of the Chapter](relative/path/to/markdown.md)
-   ```
+```markdown
+- [Title of the Chapter](relative/path/to/markdown.md)
+```
    You can either use `-` or `*` to indicate a numbered chapter.
 
 4. ***Suffix Chapter*** After the numbered chapters you can add a couple of non-numbered chapters. They are the same as prefix chapters but come after the numbered chapters instead of before.
