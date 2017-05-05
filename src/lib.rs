@@ -74,7 +74,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate handlebars;
 extern crate pulldown_cmark;
-extern crate kramer; // my thing, yay!
+extern crate fictitious; // my thing, yay!
 extern crate regex;
 
 #[macro_use] extern crate log;

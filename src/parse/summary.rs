@@ -6,13 +6,16 @@ use book::bookitem::{BookItem, Chapter};
 pub fn construct_bookitems(path: &PathBuf) -> Result<Vec<BookItem>> {
     debug!("[fn]: construct_bookitems");
     let mut summary = String::new();
-    try!(try!(File::open(path)).read_to_string(&mut summary));
+    File::open(path)?.read_to_string(&mut summary)?;
 
     debug!("[*]: Parse SUMMARY.md");
-    let top_items = try!(parse_level(&mut summary.split('\n').collect(), 0, vec![0]));
+    let top_items = parse_level(&mut summary.split('\n').collect(), 0, vec![0])?;
     debug!("[*]: Done parsing SUMMARY.md");
     Ok(top_items)
 }
+
+// TODO: Simplify SUMMARY.md. Name all chapters by the first header in their file. If a directory is given, go by dir/index.md.
+// TODO: Subsections have their own SUMMARY.md that gets read by the root one to generate the full TOC.
 
 fn parse_level(summary: &mut Vec<&str>, current_level: i32, mut section: Vec<i32>) -> Result<Vec<BookItem>> {
     debug!("[fn]: parse_level");
@@ -22,7 +25,7 @@ fn parse_level(summary: &mut Vec<&str>, current_level: i32, mut section: Vec<i32
     while !summary.is_empty() {
         let item: BookItem;
         // Indentation level of the line to parse
-        let level = try!(level(summary[0], 4));
+        let level = level(summary[0], 4)?;
 
         // if level < current_level we remove the last digit of section, exit the current function,
         // and return the parsed level to the calling function.
@@ -32,6 +35,7 @@ fn parse_level(summary: &mut Vec<&str>, current_level: i32, mut section: Vec<i32
 
         // if level > current_level we call ourselves to go one level deeper
         if level > current_level {
+            debug!("[*]: Summary; parsing deeper at {}", level);
             // Level can not be root level !!
             // Add a sub-number to section
             section.push(0);
@@ -39,7 +43,7 @@ fn parse_level(summary: &mut Vec<&str>, current_level: i32, mut section: Vec<i32
 
             if let BookItem::Chapter(ref s, ref ch) = last {
                 let mut ch = ch.clone();
-                ch.sub_items = try!(parse_level(summary, level, section.clone()));
+                ch.sub_items = parse_level(summary, level, section.clone())?;
                 items.push(BookItem::Chapter(s.clone(), ch));
 
                 // Remove the last number from the section, because we got back to our level..

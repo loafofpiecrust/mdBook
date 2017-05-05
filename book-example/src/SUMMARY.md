@@ -18,5 +18,6 @@
     - [MathJax Support](format/mathjax.md)
     - [Rust code specific features](format/rust.md)
 - [Rust Library](lib/lib.md)
+
 -----------
 [Contributors](misc/contributors.md)

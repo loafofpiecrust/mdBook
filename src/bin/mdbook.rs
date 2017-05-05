@@ -83,7 +83,7 @@ fn main() {
                         .about("Test that code samples compile"))
                     .get_matches();
 
-    // Check which subcomamnd the user ran...
+    // Check which subcommand the user ran...
     let res = match matches.subcommand() {
         ("init", Some(sub_matches)) => init(sub_matches),
         ("build", Some(sub_matches)) => build(sub_matches),
@@ -102,7 +102,7 @@ fn main() {
 }
 
 
-// Simple function that user comfirmation
+// Simple function that user confirmation
 fn confirm() -> bool {
     io::stdout().flush().unwrap();
     let mut s = String::new();
@@ -285,7 +285,7 @@ fn serve(args: &ArgMatches) -> Result<(), Box<Error>> {
             Err(e) => println!("Error while building: {:?}", e),
             _ => broadcaster.send(RELOAD_COMMAND).unwrap(),
         }
-        println!("");
+        println!();
     });
 
     Ok(())
@@ -296,9 +296,7 @@ fn test(args: &ArgMatches) -> Result<(), Box<Error>> {
     let book_dir = get_book_dir(args);
     let mut book = MDBook::new(&book_dir).read_config();
 
-    try!(book.test());
-
-    Ok(())
+    book.test()
 }
 
 
