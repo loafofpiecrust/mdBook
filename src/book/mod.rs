@@ -187,19 +187,20 @@ impl MDBook {
             };
             if !ch.path.as_os_str().is_empty() {
                 let path = self.src.join(&ch.path);
+                let md = path.with_extension("md");
 
-                if !path.exists() {
+                if !md.exists() && !path.exists() {
                     if !self.create_missing {
                         return Err(format!(
                             "'{}' referenced from SUMMARY.md does not exist.",
-                            path.to_string_lossy()).into());
+                            md.to_string_lossy()).into());
                     }
-                    debug!("[*]: {:?} does not exist, trying to create file", path);
-                    try!(::std::fs::create_dir_all(path.parent().unwrap()));
-                    let mut f = try!(File::create(path));
+                    debug!("[*]: {:?} does not exist, trying to create file", md);
+                    ::std::fs::create_dir_all(md.parent().unwrap())?;
+                    let mut f = File::create(md)?;
 
                     // debug!("[*]: Writing to {:?}", path);
-                    try!(writeln!(f, "# {}", ch.name));
+                    writeln!(f, "# {}", ch.name)?;
                 }
             }
         }
@@ -477,7 +478,7 @@ impl MDBook {
     // Construct book
     fn parse_summary(&mut self) -> Result<(), Box<Error>> {
         // When append becomes stable, use self.content.append() ...
-        self.content = try!(parse::construct_bookitems(&self.src.join("SUMMARY.md")));
+        self.content = parse::construct_bookitems(&self.src.join("SUMMARY.md"))?;
         Ok(())
     }
 }

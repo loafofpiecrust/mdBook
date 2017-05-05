@@ -66,20 +66,43 @@ impl Renderer for HtmlHandlebars {
                 BookItem::Affix(ref ch) => {
                     if ch.path != PathBuf::new() {
 
-                        let path = book.get_src().join(&ch.path);
+                        let mut path = book.get_src().join(&ch.path);
+                        
+                        // path may be:
+                        // - Full link: [title](file.md)
+                        // - Partial link: [title](file)
+                        // - Full name: file.md
+                        // - Partial name: file
+                        
+                        // target of path may be:
+                        // - file.md
+                        // - directory (no .md)
+    
+                        // presuming it's a file, the full file name.
+                        let md = path.with_extension("md");
+                        
+                        if md.is_file() {
+                            // Just use this file.
+                        } else if path.is_dir() {
+                            // read index.md
+                            path = path.join("index.md");
+                        } else {
+                            // It doesn't exist.
+                        }
 
                         debug!("[*]: Opening file: {:?}", path);
-                        let mut f = try!(File::open(&path));
-                        let mut content: String = String::new();
+                        let mut f = File::open(&path)?;
+                        let mut content = String::new();
 
                         debug!("[*]: Reading file");
-                        try!(f.read_to_string(&mut content));
+                        f.read_to_string(&mut content)?;
 
                         // Parse for playpen links
                         if let Some(p) = path.parent() {
                             content = helpers::playpen::render_playpen(&content, p);
                         }
 
+                        // TODO: Make rendering more generic, allowing multiple input formats.
                         // Render markdown using the pulldown-cmark crate
                         content = utils::render_markdown(&content);
                         print_content.push_str(&content);
@@ -94,7 +117,7 @@ impl Renderer for HtmlHandlebars {
 
                         // Render the handlebars template with the data
                         debug!("[*]: Render template");
-                        let rendered = try!(handlebars.render("index", &data));
+                        let rendered = handlebars.render("index", &data)?;
 
                         let filename = Path::new(&ch.path).with_extension("html");
 

@@ -9,6 +9,23 @@ pub enum BookItem {
     Spacer,
 }
 
+impl BookItem {
+    pub fn prepend(&mut self, section: String, pre: &Chapter) {
+        use self::BookItem::*;
+        match *self {
+            Chapter(ref mut idx, ref mut ch) => {
+                ch.path = pre.path.join(&ch.path);
+                *idx = section.clone() + &idx;
+                for item in &mut ch.sub_items {
+                    item.prepend(section.clone(), pre);
+                }
+            },
+            Affix(..) => (),
+            _ => (),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Chapter {
     pub name: String,
@@ -26,7 +43,6 @@ pub struct BookItems<'a> {
 
 impl Chapter {
     pub fn new(name: String, path: PathBuf) -> Self {
-
         Chapter {
             name: name,
             path: path,

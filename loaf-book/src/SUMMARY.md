@@ -1,23 +1,15 @@
-# Summary
 
-misc/introduction
+[Introduction](misc/introduction.md)
 
 - README
 - cli/cli-tool
-    - cli/init
+    - [init](cli/init)
     - cli/build
     - cli/watch
     - cli/serve
     - cli/test
-- format/format
-    - format/summary
-    - format/config
-    - format/theme/theme
-        - format/theme/index-hbs
-        - format/theme/syntax-highlighting
-    - format/mathjax
-    - format/rust
-- lib/lib
+- format
+- lib
 
 -----------
-misc/contributors
+[Contributors](misc/contributors.md)

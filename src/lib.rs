@@ -69,6 +69,8 @@
 //!
 //! Make sure to take a look at it.
 
+#![feature(io)]
+
 extern crate serde;
 #[macro_use]
 extern crate serde_json;
