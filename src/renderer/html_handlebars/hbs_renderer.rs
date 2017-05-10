@@ -10,7 +10,6 @@ use std::path::{Path, PathBuf};
 use std::fs::{self, File};
 use std::error::Error;
 use std::io::{self, Read};
-use std::collections::BTreeMap;
 use std::collections::HashMap;
 
 use handlebars::Handlebars;
@@ -62,25 +61,25 @@ impl Renderer for HtmlHandlebars {
         for item in book.iter() {
 
             match *item {
-                BookItem::Chapter(_, ref ch) |
+                BookItem::Chapter(ref ch) |
                 BookItem::Affix(ref ch) => {
                     if ch.path != PathBuf::new() {
 
                         let mut path = book.get_src().join(&ch.path);
-                        
+
                         // path may be:
                         // - Full link: [title](file.md)
                         // - Partial link: [title](file)
                         // - Full name: file.md
                         // - Partial name: file
-                        
+
                         // target of path may be:
                         // - file.md
                         // - directory (no .md)
-    
+
                         // presuming it's a file, the full file name.
                         let md = path.with_extension("md");
-                        
+
                         if md.is_file() {
                             // Just use this file.
                         } else if path.is_dir() {
@@ -217,35 +216,8 @@ fn make_data(book: &MDBook) -> Result<serde_json::Map<String, serde_json::Value>
     }
 
     // NOTE: Simply use the serde default serialization. Why not?
-    let mut chapters: Vec<_> = book.iter().collect();
-
-//    for item in book.iter() {
-//        // Create the data to inject in the template
-//        let mut chapter = BTreeMap::new();
-//
-//        match *item {
-//            BookItem::Affix(ref ch) => {
-//                chapter.insert("name".to_owned(), json!(ch.name));
-//                let path = ch.path.to_str().ok_or_else(||
-//                    io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
-//                chapter.insert("path".to_owned(), json!(path));
-//            },
-//            BookItem::Chapter(ref s, ref ch) => {
-//                chapter.insert("section".to_owned(), json!(s));
-//                chapter.insert("name".to_owned(), json!(ch.name));
-//                let path = ch.path.to_str().ok_or_else(||
-//                    io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
-//                chapter.insert("path".to_owned(), json!(path));
-//            },
-//            BookItem::Spacer => {
-//                chapter.insert("spacer".to_owned(), json!("_spacer_"));
-//            },
-//
-//        }
-//
-//        chapters.push(chapter);
-//    }
-
+    let chapters: Vec<_> = book.iter().collect();
+    println!("inserting chap data: {:?}", json!(chapters));
     data.insert("chapters".to_owned(), json!(chapters));
 
     debug!("[*]: JSON constructed");

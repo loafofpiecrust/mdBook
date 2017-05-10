@@ -111,43 +111,41 @@ pub fn copy_files_except_ext(from: &Path, to: &Path, recursive: bool, ext_blackl
         return Ok(());
     }
     debug!("[*] Loop");
-    for entry in try!(fs::read_dir(from)) {
-        let entry = try!(entry);
+    for entry in fs::read_dir(from)? {
+        let entry = entry?;
         debug!("[*] {:?}", entry.path());
-        let metadata = try!(entry.metadata());
+        let path = entry.path();
 
         // If the entry is a dir and the recursive option is enabled, call itself
-        if metadata.is_dir() && recursive {
-            if entry.path() == to.to_path_buf() {
+        if path.is_dir() && recursive {
+            if path == to.to_path_buf() {
                 continue;
             }
             debug!("[*] is dir");
 
             // check if output dir already exists
             if !to.join(entry.file_name()).exists() {
-                try!(fs::create_dir(&to.join(entry.file_name())));
+                fs::create_dir(&to.join(entry.file_name()))?;
             }
 
-            try!(copy_files_except_ext(&from.join(entry.file_name()),
+            copy_files_except_ext(&from.join(entry.file_name()),
                                        &to.join(entry.file_name()),
                                        true,
-                                       ext_blacklist));
-        } else if metadata.is_file() {
-
+                                       ext_blacklist)?;
+        } else if path.is_file() {
             // Check if it is in the blacklist
-            if let Some(ext) = entry.path().extension() {
+            if let Some(ext) = path.extension() {
                 if ext_blacklist.contains(&ext.to_str().unwrap()) {
                     continue;
                 }
             }
             debug!("[*] creating path for file: {:?}",
-                   &to.join(entry.path().file_name().expect("a file should have a file name...")));
+                   &to.join(path.file_name().expect("a file should have a file name...")));
 
             info!("[*] Copying file: {:?}\n    to {:?}",
-                  entry.path(),
-                  &to.join(entry.path().file_name().expect("a file should have a file name...")));
-            try!(fs::copy(entry.path(),
-                          &to.join(entry.path().file_name().expect("a file should have a file name..."))));
+                  &path,
+                  &to.join(path.file_name().expect("a file should have a file name...")));
+            fs::copy(&path, &to.join(path.file_name().expect("a file should have a file name...")))?;
         }
     }
     Ok(())

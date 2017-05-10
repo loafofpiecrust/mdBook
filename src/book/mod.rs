@@ -182,7 +182,7 @@ impl MDBook {
             debug!("[*]: item: {:?}", item);
             let ch = match *item {
                 BookItem::Spacer => continue,
-                BookItem::Chapter(_, ref ch) |
+                BookItem::Chapter(ref ch) |
                 BookItem::Affix(ref ch) => ch,
             };
             if !ch.path.as_os_str().is_empty() {
@@ -358,7 +358,7 @@ impl MDBook {
         try!(self.parse_summary());
         for item in self.iter() {
 
-            if let BookItem::Chapter(_, ref ch) = *item {
+            if let BookItem::Chapter(ref ch) = *item {
                 if ch.path != PathBuf::new() {
 
                     let path = self.get_src().join(&ch.path);

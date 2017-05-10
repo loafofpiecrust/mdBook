@@ -1,24 +1,22 @@
-use serde::{Serialize, Serializer, Deserialize};
-use serde::ser::SerializeStruct;
+
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "t", content = "c")]
 pub enum BookItem {
-    Chapter(String, Chapter), // String = section
+    Chapter(Chapter),
     Affix(Chapter),
     Spacer,
 }
 
 impl BookItem {
-    pub fn prepend(&mut self, section: String, pre: &Chapter) {
+    pub fn prepend(&mut self, pre: &Chapter) {
         use self::BookItem::*;
         match *self {
-            Chapter(ref mut idx, ref mut ch) => {
+            Chapter(ref mut ch) => {
                 ch.path = pre.path.join(&ch.path);
-                *idx = section.clone() + &idx;
                 for item in &mut ch.sub_items {
-                    item.prepend(section.clone(), pre);
+                    item.prepend(pre);
                 }
             },
             Affix(..) => (),
@@ -82,7 +80,7 @@ impl<'a> Iterator for BookItems<'a> {
                 let cur = &self.items[self.current_index];
 
                 match *cur {
-                    BookItem::Chapter(_, ref ch) | BookItem::Affix(ref ch) => {
+                    BookItem::Chapter(ref ch) | BookItem::Affix(ref ch) => {
                         self.stack.push((self.items, self.current_index));
                         self.items = &ch.sub_items[..];
                         self.current_index = 0;
