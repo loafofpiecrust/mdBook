@@ -17,7 +17,6 @@ use std::process::Command;
 use {theme, parse, utils};
 use renderer::{Renderer, HtmlHandlebars};
 
-
 pub struct MDBook {
     root: PathBuf,
     dest: PathBuf,
@@ -36,6 +35,13 @@ pub struct MDBook {
     /// Should `mdbook build` create files referenced from SUMMARY.md if they
     /// don't exist
     pub create_missing: bool,
+
+    /// The extension to use on pages. If false (the default), page urls are all bare.
+    /// This default makes the most sense on one-page webapps or a site with an .htaccess
+    /// where the file extension is unneccessary or even erronous.
+    /// false => http://site.com/page
+    /// true => http://site.com/page.html
+    pub page_extension: bool,
 }
 
 impl MDBook {
@@ -84,6 +90,7 @@ impl MDBook {
 
             livereload: None,
             create_missing: true,
+            page_extension: false,
         }
     }
 

@@ -4,6 +4,7 @@ use std::io::Read;
 
 
 pub static INDEX: &'static [u8] = include_bytes!("index.hbs");
+pub static CHAPTER: &'static [u8] = include_bytes!("chapter.hbs");
 pub static CSS: &'static [u8] = include_bytes!("book.css");
 pub static FAVICON: &'static [u8] = include_bytes!("favicon.png");
 pub static JS: &'static [u8] = include_bytes!("book.js");
@@ -27,6 +28,7 @@ pub static FONT_AWESOME_OTF: &'static [u8] = include_bytes!("_FontAwesome/fonts/
 /// user has specified another theme.
 pub struct Theme {
     pub index: Vec<u8>,
+    pub chapter: Vec<u8>,
     pub css: Vec<u8>,
     pub favicon: Vec<u8>,
     pub js: Vec<u8>,
@@ -42,6 +44,7 @@ impl Theme {
         // Default theme
         let mut theme = Theme {
             index: INDEX.to_owned(),
+            chapter: CHAPTER.to_owned(),
             css: CSS.to_owned(),
             favicon: FAVICON.to_owned(),
             js: JS.to_owned(),
@@ -62,6 +65,12 @@ impl Theme {
         if let Ok(mut f) = File::open(&src.join("index.hbs")) {
             theme.index.clear(); // Reset the value, because read_to_string appends...
             let _ = f.read_to_end(&mut theme.index);
+        }
+
+        // index.hbs
+        if let Ok(mut f) = File::open(&src.join("chapter.hbs")) {
+            theme.chapter.clear(); // Reset the value, because read_to_string appends...
+            let _ = f.read_to_end(&mut theme.chapter);
         }
 
         // book.js

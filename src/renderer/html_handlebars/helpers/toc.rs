@@ -40,14 +40,15 @@ fn item_to_li(item: BookItem, current: &Path, rc: &mut RenderContext) -> Result<
     match item {
         BookItem::Spacer => write!(rc.writer, "<li class=\"spacer\"></li>")?,
         BookItem::Affix(ch) => {
-            write!(rc.writer, "<li class=\"affix\"><a href=\"{}\"", ch.path.with_extension("html").to_str().unwrap())?;
+            write!(rc.writer, "<li class=\"affix\"><a href=\"/{}\"", ch.path.to_str().unwrap())?;
             if ch.path == current {
                 write!(rc.writer, " class=\"active\"")?;
             }
             write!(rc.writer, ">{}</a></li>", ch.name)?;
         },
         BookItem::Chapter(ch) => {
-            write!(rc.writer, "<li class=\"item\"><a href=\"{}\"", ch.path.with_extension("html").to_str().unwrap())?;
+            let slug = ch.path.file_stem().unwrap().to_str().unwrap();
+            write!(rc.writer, "<li class=\"item\"><a name=\"{}\" href=\"/{}\"", slug, ch.path.to_str().unwrap())?;
             if ch.path == current {
                 write!(rc.writer, " class=\"active\"")?;
             }

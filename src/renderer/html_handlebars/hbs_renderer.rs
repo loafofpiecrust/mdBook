@@ -37,12 +37,15 @@ impl Renderer for HtmlHandlebars {
         // Register template
         debug!("[*]: Register handlebars template");
         handlebars.register_template_string("index", try!(String::from_utf8(theme.index)))?;
+        handlebars.register_template_string("chapter", try!(String::from_utf8(theme.chapter)))?;
 
         // Register helpers
         debug!("[*]: Register handlebars helpers");
         handlebars.register_helper("toc", Box::new(helpers::toc::RenderToc));
         handlebars.register_helper("previous", Box::new(helpers::navigation::previous));
         handlebars.register_helper("next", Box::new(helpers::navigation::next));
+        handlebars.register_helper("camelCase", Box::new(helpers::text::camel_case));
+        handlebars.register_helper("jsonify", Box::new(helpers::text::jsonify));
 
         let mut data = make_data(book)?;
 
@@ -56,8 +59,14 @@ impl Renderer for HtmlHandlebars {
                                                "Unexpected error when constructing destination path")));
         }
 
+        // Render the index file (optionally a title page)
+        // TODO: Allow an index.md that's inserted as data.content
+        let index = handlebars.render("index", &data)?;
+        book.write_file(book.get_dest().join("index.html"), &index.into_bytes())?;
+
+
         // Render a file for every entry in the book
-        let mut index = true;
+        // let mut index = true;
         for item in book.iter() {
 
             match *item {
@@ -82,6 +91,7 @@ impl Renderer for HtmlHandlebars {
 
                         if md.is_file() {
                             // Just use this file.
+                            path = md;
                         } else if path.is_dir() {
                             // read index.md
                             path = path.join("index.md");
@@ -107,22 +117,32 @@ impl Renderer for HtmlHandlebars {
                         print_content.push_str(&content);
 
                         // Update the context with data for this file
-                        let path = ch.path.to_str().ok_or_else(||
-                            io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
+                        // NOTE: Removes the extension. May or may not be wanted.
+                        let path = ch.path.with_extension("");
+                        let path = if book.page_extension {
+                            ch.path.to_str().unwrap()
+                        } else {
+                            path.to_str().unwrap()
+                        };
+                        // let path = path.to_str().ok_or_else(||
+                        //     io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
+                        let slug = ch.path.file_stem().ok_or_else(||
+                            io::Error::new(io::ErrorKind::Other, "Couldn't get file name"))?.to_str().unwrap();
                         data.insert("path".to_owned(), json!(path));
+                        data.insert("slug".to_owned(), json!(slug));
                         data.insert("content".to_owned(), json!(content));
                         data.insert("chapter_title".to_owned(), json!(ch.name));
                         data.insert("path_to_root".to_owned(), json!(utils::fs::path_to_root(&ch.path)));
 
                         // Render the handlebars template with the data
                         debug!("[*]: Render template");
-                        let rendered = handlebars.render("index", &data)?;
+                        let rendered = handlebars.render("chapter", &data)?;
 
                         let filename = Path::new(&ch.path).with_extension("html");
 
                         // Do several kinds of post-processing
-                        let rendered = build_header_links(rendered, filename.to_str().unwrap_or(""));
-                        let rendered = fix_anchor_links(rendered, filename.to_str().unwrap_or(""));
+                        let rendered = build_header_links(rendered, path);
+                        let rendered = fix_anchor_links(rendered, path);
                         let rendered = fix_code_blocks(rendered);
                         let rendered = add_playpen_pre(rendered);
 
@@ -131,26 +151,26 @@ impl Renderer for HtmlHandlebars {
                         try!(book.write_file(filename, &rendered.into_bytes()));
 
                         // Create an index.html from the first element in SUMMARY.md
-                        if index {
-                            debug!("[*]: index.html");
-
-                            let mut content = String::new();
-                            let _source = try!(File::open(book.get_dest().join(&ch.path.with_extension("html"))))
-                                .read_to_string(&mut content);
-
-                            // This could cause a problem when someone displays code containing <base href=...>
-                            // on the front page, however this case should be very very rare...
-                            content = content.lines()
-                                .filter(|line| !line.contains("<base href="))
-                                .collect::<Vec<&str>>()
-                                .join("\n");
-
-                            try!(book.write_file("index.html", content.as_bytes()));
-
-                            info!("[*] Creating index.html from {:?} ✓",
-                                  book.get_dest().join(&ch.path.with_extension("html")));
-                            index = false;
-                        }
+                        // if index {
+                        //     debug!("[*]: index.html");
+                        //
+                        //     let mut content = String::new();
+                        //     let _source = try!(File::open(book.get_dest().join(&ch.path.with_extension("html"))))
+                        //         .read_to_string(&mut content);
+                        //
+                        //     // This could cause a problem when someone displays code containing <base href=...>
+                        //     // on the front page, however this case should be very very rare...
+                        //     content = content.lines()
+                        //         .filter(|line| !line.contains("<base href="))
+                        //         .collect::<Vec<&str>>()
+                        //         .join("\n");
+                        //
+                        //     try!(book.write_file("index.html", content.as_bytes()));
+                        //
+                        //     info!("[*] Creating index.html from {:?} ✓",
+                        //           book.get_dest().join(&ch.path.with_extension("html")));
+                        //     index = false;
+                        // }
                     }
                 },
                 _ => {},

@@ -2,7 +2,7 @@
 <html lang="{{ language }}">
     <head>
         <meta charset="UTF-8">
-        <title>{{ title }}</title>
+        <title>{{ chapter_title }} - {{ title }}</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="{{ description }}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -68,10 +68,35 @@
                 </div>
 
                 <div id="content" class="content">
-                    Front page
+                    {{{ content }}}
                 </div>
 
+                <!-- Mobile navigation buttons -->
+                {{#previous}}
+                    <a href="{{link}}" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                {{/previous}}
+
+                {{#next}}
+                    <a href="{{link}}" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                {{/next}}
+
             </div>
+
+            {{#previous}}
+                <a href="{{link}}" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            {{/previous}}
+
+            {{#next}}
+                <a href="{{link}}" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            {{/next}}
 
         </div>
 

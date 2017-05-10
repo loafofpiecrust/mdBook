@@ -38,7 +38,7 @@ pub fn previous(_h: &Helper, r: &Handlebars, rc: &mut RenderContext) -> Result<(
                     if ch.path == Path::new(&current) {
                         match previous {
                             Some(ref mut prev) => {
-                                prev.path.set_extension("html");
+                                prev.path.set_extension("");
 
                                 debug!("[*]: Inject in context");
                                 let mut data = BTreeMap::new();
@@ -101,7 +101,7 @@ pub fn next(_h: &Helper, r: &Handlebars, rc: &mut RenderContext) -> Result<(), R
                     if ch.path == Path::new(&current) {
                         match next {
                             Some(ref mut prev) => {
-                                prev.path.set_extension("html");
+                                prev.path.set_extension("");
 
                                 debug!("[*]: Inject in context");
                                 let mut data = BTreeMap::new();

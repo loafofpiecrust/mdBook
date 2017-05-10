@@ -200,6 +200,8 @@ fn parse_line(root: &Path, l: &str) -> Option<BookItem> {
                         }
                     }
                 }
+                chap.path.set_extension(""); // keep _all_ links bare.
+
                 Some(BookItem::Chapter(chap))
             }
             // Non-list element
@@ -216,7 +218,8 @@ fn parse_line(root: &Path, l: &str) -> Option<BookItem> {
             _ => {
                 debug!("[*]: Line is a link/plain element");
 
-                if let Some((name, path)) = read_link(line) {
+                if let Some((name, mut path)) = read_link(line) {
+                    path.set_extension(""); // keep _all_ links bare
                     Some(BookItem::Affix(Chapter::new(name, path)))
                 } else {
                     // TODO: genericize the item chapter code for affix chapters here.
