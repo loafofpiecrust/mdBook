@@ -37,7 +37,7 @@ impl Renderer for HtmlHandlebars {
 
         // Register template
         debug!("[*]: Register handlebars template");
-        try!(handlebars.register_template_string("index", try!(String::from_utf8(theme.index))));
+        handlebars.register_template_string("index", try!(String::from_utf8(theme.index)))?;
 
         // Register helpers
         debug!("[*]: Register handlebars helpers");
@@ -45,7 +45,7 @@ impl Renderer for HtmlHandlebars {
         handlebars.register_helper("previous", Box::new(helpers::navigation::previous));
         handlebars.register_helper("next", Box::new(helpers::navigation::next));
 
-        let mut data = try!(make_data(book));
+        let mut data = make_data(book)?;
 
         // Print version
         let mut print_content: String = String::new();
@@ -216,34 +216,35 @@ fn make_data(book: &MDBook) -> Result<serde_json::Map<String, serde_json::Value>
         data.insert("livereload".to_owned(), json!(livereload));
     }
 
-    let mut chapters = vec![];
+    // NOTE: Simply use the serde default serialization. Why not?
+    let mut chapters: Vec<_> = book.iter().collect();
 
-    for item in book.iter() {
-        // Create the data to inject in the template
-        let mut chapter = BTreeMap::new();
-
-        match *item {
-            BookItem::Affix(ref ch) => {
-                chapter.insert("name".to_owned(), json!(ch.name));
-                let path = ch.path.to_str().ok_or_else(||
-                    io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
-                chapter.insert("path".to_owned(), json!(path));
-            },
-            BookItem::Chapter(ref s, ref ch) => {
-                chapter.insert("section".to_owned(), json!(s));
-                chapter.insert("name".to_owned(), json!(ch.name));
-                let path = ch.path.to_str().ok_or_else(||
-                    io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
-                chapter.insert("path".to_owned(), json!(path));
-            },
-            BookItem::Spacer => {
-                chapter.insert("spacer".to_owned(), json!("_spacer_"));
-            },
-
-        }
-
-        chapters.push(chapter);
-    }
+//    for item in book.iter() {
+//        // Create the data to inject in the template
+//        let mut chapter = BTreeMap::new();
+//
+//        match *item {
+//            BookItem::Affix(ref ch) => {
+//                chapter.insert("name".to_owned(), json!(ch.name));
+//                let path = ch.path.to_str().ok_or_else(||
+//                    io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
+//                chapter.insert("path".to_owned(), json!(path));
+//            },
+//            BookItem::Chapter(ref s, ref ch) => {
+//                chapter.insert("section".to_owned(), json!(s));
+//                chapter.insert("name".to_owned(), json!(ch.name));
+//                let path = ch.path.to_str().ok_or_else(||
+//                    io::Error::new(io::ErrorKind::Other, "Could not convert path to str"))?;
+//                chapter.insert("path".to_owned(), json!(path));
+//            },
+//            BookItem::Spacer => {
+//                chapter.insert("spacer".to_owned(), json!("_spacer_"));
+//            },
+//
+//        }
+//
+//        chapters.push(chapter);
+//    }
 
     data.insert("chapters".to_owned(), json!(chapters));
 

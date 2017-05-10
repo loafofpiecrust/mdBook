@@ -1,8 +1,9 @@
-use serde::{Serialize, Serializer};
+use serde::{Serialize, Serializer, Deserialize};
 use serde::ser::SerializeStruct;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "t", content = "c")]
 pub enum BookItem {
     Chapter(String, Chapter), // String = section
     Affix(Chapter),
@@ -26,7 +27,7 @@ impl BookItem {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Chapter {
     pub name: String,
     pub path: PathBuf,
@@ -40,7 +41,6 @@ pub struct BookItems<'a> {
     pub stack: Vec<(&'a [BookItem], usize)>,
 }
 
-
 impl Chapter {
     pub fn new(name: String, path: PathBuf) -> Self {
         Chapter {
@@ -51,16 +51,16 @@ impl Chapter {
     }
 }
 
-
-impl Serialize for Chapter {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        let mut struct_ = try!(serializer.serialize_struct("Chapter", 2));
-        try!(struct_.serialize_field("name", &self.name));
-        try!(struct_.serialize_field("path", &self.path));
-        struct_.end()
-    }
-}
-
+//
+//impl Serialize for Chapter {
+//    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+//        let mut struct_ = serializer.serialize_struct("Chapter", 2)?;
+//        struct_.serialize_field("name", &self.name)?;
+//        struct_.serialize_field("path", &self.path)?;
+//        struct_.end()
+//    }
+//}
+//
 
 
 // Shamelessly copied from Rustbook

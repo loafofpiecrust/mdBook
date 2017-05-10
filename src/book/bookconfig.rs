@@ -98,6 +98,7 @@ impl BookConfig {
     /// Parses the string to JSON and converts it to BTreeMap<String, toml::Value>.
     pub fn parse_from_json_string(&mut self, data: &str) -> &mut Self {
 
+        println!("bookconfig parsing");
         let c: serde_json::Value = match serde_json::from_str(data) {
             Ok(x) => x,
             Err(e) => {
@@ -108,6 +109,7 @@ impl BookConfig {
 
         let config = json_object_to_btreemap(c.as_object().unwrap());
         self.parse_from_btreemap(&config);
+        println!("bookconfig parsed");
 
         self
     }

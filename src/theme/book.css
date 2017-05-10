@@ -77,6 +77,11 @@ table thead td {
   list-style: none outside none;
   padding-left: 0;
   line-height: 2.2em;
+  counter-reset: chapter;
+}
+.chapter li:not(.affix):not(.spacer)::before {
+  counter-increment: chapter;
+  content: counters(chapter, ".") ". ";
 }
 .chapter li a {
   padding: 5px 0;

@@ -4,10 +4,12 @@ use std::collections::{VecDeque, BTreeMap};
 use serde_json;
 use handlebars::{Handlebars, RenderError, RenderContext, Helper, Renderable};
 
+use book::bookitem::{Chapter, BookItem};
+
 
 // Handlebars helper for navigation
-
 pub fn previous(_h: &Helper, r: &Handlebars, rc: &mut RenderContext) -> Result<(), RenderError> {
+    
     debug!("[fn]: previous (handlebars helper)");
 
     debug!("[*]: Get data from context");
@@ -19,9 +21,57 @@ pub fn previous(_h: &Helper, r: &Handlebars, rc: &mut RenderContext) -> Result<(
     let current = rc.context().navigate(rc.get_path(), &VecDeque::new(), "path")
         .to_string()
         .replace("\"", "");
-
-
+    
+    
     debug!("[*]: Decode chapters from JSON");
+    // Decode json format
+    let decoded: Vec<BookItem> = match serde_json::from_str(&chapters.to_string()) {
+        Ok(data) => data,
+        Err(_) => return Err(RenderError::new("Could not decode the JSON data")),
+    };
+    let mut previous: Option<Chapter> = None;
+    
+    for item in decoded {
+        match item {
+            BookItem::Chapter(_, ch) | BookItem::Affix(ch) => {
+                if ch.path != Path::new("") {
+                    if ch.path == Path::new(&current) {
+                        match previous {
+                            Some(ref mut prev) => {
+                                prev.path.set_extension("html");
+    
+                                debug!("[*]: Inject in context");
+                                let mut data = BTreeMap::new();
+                                data.insert("title".to_owned(), json!(prev.name));
+                                data.insert("link".to_owned(), json!(prev.path.to_str().unwrap()));
+                                
+                                // Inject in current context
+                                let updated_context = rc.context().extend(&data);
+    
+                                debug!("[*]: Render template");
+                                // Render template
+                                match _h.template() {
+                                    Some(t) => {
+                                        *rc.context_mut() = updated_context;
+                                        t.render(r, rc)?;
+                                    },
+                                    None => return Err(RenderError::new("Error with the handlebars template")),
+                                }
+                            },
+                            _ => (),
+                        }
+                        break;
+                    } else {
+                        previous = Some(ch);
+                    }
+                }
+            },
+            _ => continue
+        }
+    }
+    return Ok(());
+    
+
     // Decode json format
     let decoded: Vec<BTreeMap<String, String>> = match serde_json::from_str(&chapters.to_string()) {
         Ok(data) => data,
@@ -84,7 +134,7 @@ pub fn previous(_h: &Helper, r: &Handlebars, rc: &mut RenderContext) -> Result<(
                         match _h.template() {
                             Some(t) => {
                                 *rc.context_mut() = updated_context;
-                                try!(t.render(r, rc));
+                                t.render(r, rc)?;
                             },
                             None => return Err(RenderError::new("Error with the handlebars template")),
                         }
@@ -120,6 +170,54 @@ pub fn next(_h: &Helper, r: &Handlebars, rc: &mut RenderContext) -> Result<(), R
     let current = rc.context().navigate(rc.get_path(), &VecDeque::new(), "path")
         .to_string()
         .replace("\"", "");
+    
+    debug!("[*]: Decode chapters from JSON");
+    // Decode json format
+    let decoded: Vec<BookItem> = match serde_json::from_str(&chapters.to_string()) {
+        Ok(data) => data,
+        Err(_) => return Err(RenderError::new("Could not decode the JSON data")),
+    };
+    let mut next: Option<Chapter> = None;
+    
+    for item in decoded.into_iter().rev() {
+        match item {
+            BookItem::Chapter(_, ch) | BookItem::Affix(ch) => {
+                if ch.path != Path::new("") {
+                    if ch.path == Path::new(&current) {
+                        match next {
+                            Some(ref mut prev) => {
+                                prev.path.set_extension("html");
+                                
+                                debug!("[*]: Inject in context");
+                                let mut data = BTreeMap::new();
+                                data.insert("title".to_owned(), json!(prev.name));
+                                data.insert("link".to_owned(), json!(prev.path.to_str().unwrap()));
+                                
+                                // Inject in current context
+                                let updated_context = rc.context().extend(&data);
+                                
+                                debug!("[*]: Render template");
+                                // Render template
+                                match _h.template() {
+                                    Some(t) => {
+                                        *rc.context_mut() = updated_context;
+                                        t.render(r, rc)?;
+                                    },
+                                    None => return Err(RenderError::new("Error with the handlebars template")),
+                                }
+                            },
+                            _ => (),
+                        }
+                        break;
+                    } else {
+                        next = Some(ch);
+                    }
+                }
+            },
+            _ => continue
+        }
+    }
+    return Ok(());
 
     debug!("[*]: Decode chapters from JSON");
     // Decode json format
